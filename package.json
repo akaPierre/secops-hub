@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon backend/server.js",
     "start": "node backend/server.js",
+    "setup-db": "node backend/scripts/setup-database.js",
     "test": "jest --coverage",
     "lint": "eslint backend/**/*.js",
     "lint:fix": "eslint backend/**/*.js --fix",
