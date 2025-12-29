@@ -14,6 +14,7 @@ const logger = require('./utils/logger');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const threatRoutes = require('./routes/threatRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,7 +55,8 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    version: '0.2.0'
   });
 });
 
@@ -62,17 +64,27 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     message: 'SecOps Hub API',
-    version: '0.1.0',
-    documentation: 'https://github.com/akaPierre/secops-hub',
+    version: '0.2.0',
+    documentation: 'https://github.com/akaPierre/secops-hub/blob/main/docs/API.md',
     endpoints: {
-      health: '/health',
+      health: 'GET /health',
       auth: {
         register: 'POST /api/auth/register',
         login: 'POST /api/auth/login',
         profile: 'GET /api/auth/profile (protected)',
         logout: 'POST /api/auth/logout (protected)'
       },
-      threats: '/api/threats/* (coming soon)',
+      threats: {
+        check: 'POST /api/threats/check - Unified threat intelligence',
+        virustotal: 'GET /api/threats/virustotal?indicator=IP&type=ip',
+        shodan: 'GET /api/threats/shodan?ip=IP',
+        abuseipdb: 'GET /api/threats/abuseipdb?ip=IP',
+        cveSearch: 'GET /api/threats/cve/search?keyword=KEYWORD',
+        cveDetails: 'GET /api/threats/cve/CVE-ID',
+        list: 'GET /api/threats/',
+        statistics: 'GET /api/threats/statistics',
+        search: 'GET /api/threats/search?q=QUERY'
+      },
       logs: '/api/logs/* (coming soon)',
       scans: '/api/scans/* (coming soon)',
       alerts: '/api/alerts/* (coming soon)'
@@ -82,12 +94,14 @@ app.get('/api', (req, res) => {
 
 // Mount routes
 app.use('/api/auth', authRoutes);
+app.use('/api/threats', threatRoutes);
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     error: 'Not Found',
-    message: `Cannot ${req.method} ${req.path}`
+    message: `Cannot ${req.method} ${req.path}`,
+    documentation: 'https://github.com/akaPierre/secops-hub/blob/main/docs/API.md'
   });
 });
 
@@ -110,10 +124,11 @@ process.on('SIGTERM', () => {
 
 // Start server
 const server = app.listen(PORT, () => {
-  logger.info(`🛡️  SecOps Hub API running on port ${PORT}`);
+  logger.info(`🛡️  SecOps Hub API v0.2.0 running on port ${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
   logger.info(`📚 API docs: http://localhost:${PORT}/api`);
+  logger.info(`🔍 Threat Intelligence: READY`);
 });
 
 module.exports = app;
